@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" version="3.1">
+  
+  <!--servlet-mapping>
+    <servlet-name>cm.busime.camerpay.api.CamerpayAPI</servlet-name>
+    <url-pattern>/camerpay-api/*</url-pattern>
+  </servlet-mapping-->
+  
+    <listener>
+		<listener-class>
+			org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap</listener-class>
+	</listener>
+	<servlet>
+		<servlet-name>resteasy-servlet</servlet-name>
+		<servlet-class>org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher</servlet-class>
+	    <init-param>
+	        <param-name>javax.ws.rs.Application</param-name>
+	        <param-value>cm.busime.camerpay.api.CamerpayAPI</param-value>
+	    </init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>resteasy-servlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+	
+	<!--context-param>
+        <param-name>javax.ws.rs.Application</param-name>
+        <param-value>cm.busime.camerpay.api.CamerpayAPI</param-value>
+    </context-param-->
+	
+	<!-- Auto scan REST service -->
+    <context-param>
+        <param-name>resteasy.scan</param-name>
+        <param-value>true</param-value>
+    </context-param>
+	
+	
+  <error-page>
+      <error-code>500</error-code>
+      <location>/error_500.html</location>
+  </error-page>
+  <error-page>
+      <error-code>404</error-code>
+      <location>/error_404.html</location>
+  </error-page>
+  
+  <display-name>camerpay-api</display-name>
+</web-app>
