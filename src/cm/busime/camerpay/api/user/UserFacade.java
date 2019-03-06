@@ -34,7 +34,7 @@ public class UserFacade {
 	    	throw new CamerpayAPIException(StatusCode.INVALID_CONTENT);
 	    }
 		if(!userStore.emailExists(user.getTxtemail())){
-			userStore.createUserRegistration(user);
+			userStore.createAuth(user);
 			return StatusCode.USER_CREATED;
 		}
 		else {
@@ -42,12 +42,15 @@ public class UserFacade {
 		}
 	}
 	
-	public JsonObject userAuthentication (final String authString) {
-		Role role = userStore.validateUser(authString);
-		if (role != null) {
-			return responseBuilder.getResponseSimple(role, "true");
-		}
-		else
-			return responseBuilder.getResponseSimple("false", StatusCode.USER_AUTHENTICATION_FAILED, "");
+	public User userAuthentication (final String loginName) {
+		return userStore.authenticateUser(loginName);
+	}
+	
+	public User findUserByAccesKey (final String accessKey) {
+		return userStore.findUserByAccessKey(accessKey);
+	}
+	
+	public User updateUser (User user) {
+		return userStore.merge(user);
 	}
 }

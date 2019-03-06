@@ -1,5 +1,6 @@
 package cm.busime.camerpay.api.entity;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -21,6 +22,10 @@ import cm.busime.camerpay.api.util.HashUtils;
 	@NamedQuery (
 			name = User.GET_USER_BY_EMAIL,
 			query = "select p from User p where p.txtemail = :txtemail"
+	),
+	@NamedQuery (
+			name = User.GET_USER_BY_ACCESS_KEY,
+			query = "select p from User p where p.accessKey = :accessKey"
 	)
 })
 
@@ -30,6 +35,7 @@ import cm.busime.camerpay.api.util.HashUtils;
 public class User extends BaseEntity{
 
 	public static final String GET_USER_BY_EMAIL = "User.GET_USER_BY_EMAIL";
+	public static final String GET_USER_BY_ACCESS_KEY = "User.GET_USER_BY_ACCESS_KEY";
 	private static final long serialVersionUID = 1L;
 	private static final int KEY_LEN = 1024;
 	private static final int ROUNDS = 100_021;
@@ -55,10 +61,10 @@ public class User extends BaseEntity{
 	private String txtmiddlename;
 	
 	@Column(name = "txtpassword")
-	private String txtpassword;
+	private byte[] txtpassword;
 	
 	@Column(name = "txtstatus")
-	private UserStatus txtstatus;
+	private UserStatus txtstatus = UserStatus.NEW;
 
 	public String getTxtemail() {
 		return txtemail;
@@ -116,12 +122,12 @@ public class User extends BaseEntity{
 	}
 	
 	public void setPassword(String password){
-	    this.txtpassword = new String(obtainPasswordHash(password));
+	    this.txtpassword = obtainPasswordHash(password);
 	}
 
 	  public boolean checkPassword(String password) {
 	    return txtstatus == UserStatus.ACTIVE 
-	            && new String(obtainPasswordHash(password)).equals(this.txtpassword);
+	            && Arrays.equals(obtainPasswordHash(password), this.txtpassword);
 	  }
 
 	  private byte[] obtainPasswordHash(String password) {

@@ -24,6 +24,7 @@ import cm.busime.camerpay.api.ResponseBuilder;
 import cm.busime.camerpay.api.entity.Auth;
 import cm.busime.camerpay.api.entity.User;
 import cm.busime.camerpay.api.enumeration.StatusCode;
+import cm.busime.camerpay.api.enumeration.UserStatus;
 import cm.busime.camerpay.api.enumeration.RoleType;
 import cm.busime.camerpay.api.error.CamerpayAPIException;
 
@@ -60,17 +61,38 @@ public class UserResource {
 	@GET
 	@Path("authentication/login/{loginName}/password/{password}")
 	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
-	public Response userAuth(@PathParam("loginName") final String loginName,
+	public Response userAuthentication(@PathParam("loginName") final String loginName,
 							 @PathParam("password") final String password){
+		log.log(Level.INFO, "...incomming authentication request for " + loginName);
+		User user = userFacade.userAuthentication(loginName);
+		if (user == null) {
+			log.log(Level.INFO, "authentication failed for " + loginName);
 			return responseBuilder
-					.statusOk()
-					.entity(getUserAuthenticationInfo(loginName))
+				.status(StatusCode.USER_NOT_EXIST.getResponseStatus())
+				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_NOT_EXIST, new Object[] {loginName}))
+				.build();
+		}
+		if (!user.getTxtstatus().equals(UserStatus.ACTIVE))
+			return responseBuilder
+					.status(StatusCode.USER_NOT_ACTIVATED.getResponseStatus())
+					.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_NOT_ACTIVATED))
 					.build();
+		
+		if (!user.checkPassword(password))
+			return responseBuilder
+				.status(StatusCode.USER_AUTHENTICATION_FAILED.getResponseStatus())
+				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_AUTHENTICATION_FAILED))
+				.build();
+		
+		return responseBuilder
+				.statusOk()
+				.entity(responseBuilder.getResponseSimple("true", StatusCode.USER_AUTHENTICATION_SUCCESSFULL))
+				.build();
 	}
 	
 	@POST
 	@Path("registration")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Consumes({MediaType.APPLICATION_JSON + "; charset=utf-8"})
 	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
 	public Response userRegister(User user){
 		log.log(Level.INFO, "...incomming registration request: " + user.toString());
@@ -94,6 +116,27 @@ public class UserResource {
 		return resp;
 	}
 	
+	@PUT
+	@Path("account/{key}")
+	@Consumes({MediaType.APPLICATION_JSON + "; charset=utf-8"})
+	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
+	public Response activateUserAccount(@PathParam("key") final String accessKey){
+		User user = userFacade.findUserByAccesKey(accessKey);
+		if (user == null) {
+			log.log(Level.INFO, "User not found");
+			return responseBuilder
+				.status(StatusCode.USER_ACCESS_KEY_NOT_EXIST.getResponseStatus())
+				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_ACCESS_KEY_NOT_EXIST,new Object[] {accessKey}))
+				.build();
+		}
+		user.setTxtstatus(UserStatus.ACTIVE);
+		userFacade.updateUser(user);
+		return responseBuilder
+				.statusOk()
+				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_ACTIVATED, new Object[] {user.getTxtemail()}))
+				.build();
+	}
+	
 	@GET
 	@Path("account/{id}")
 	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
@@ -105,7 +148,7 @@ public class UserResource {
 	}
 	
 	@PUT
-	@Path("account/{id}")
+	@Path("account/{id}/status/{status}")
 	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
 	public Response updateUserAccount(@PathParam("id") final String user_id){
 			return responseBuilder
@@ -127,7 +170,7 @@ public class UserResource {
 	private JsonObject getUserAuthenticationInfo (String authString) {
 		try {
 			String decodedAuthString = new String(Base64.decode(authString));
-			return userFacade.userAuthentication(decodedAuthString);
+			return null;
 		}catch(IOException e) {
 			return responseBuilder.getResponseSimple("false", StatusCode.USER_AUTHENTICATION_FAILED, new Object[] { e.getMessage()});
 		}

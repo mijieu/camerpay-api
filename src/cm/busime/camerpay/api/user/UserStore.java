@@ -10,9 +10,7 @@ import javax.persistence.TypedQuery;
 
 import cm.busime.camerpay.api.entity.Auth;
 import cm.busime.camerpay.api.entity.User;
-import cm.busime.camerpay.api.entity.Role;
-import cm.busime.camerpay.api.entity.Contact;
-import cm.busime.camerpay.api.enumeration.RoleType;
+import cm.busime.camerpay.api.util.HashUtils;
 
 public class UserStore {
 
@@ -28,31 +26,34 @@ public class UserStore {
 	
 	public void createAuth(User user) {
 		em.persist(user);
-//		Role role = new Role();
-//		role.setUser_id(auth.getUser_id());
-//		role.setRole(type);
-//		em.persist(role);
 	}
 	
-	public void createUserRegistration(User user) {
-		em.persist(user);
+	public User merge(User user) {
+		return em.merge(user);
 	}
 	
-	public Role validateUser(String authString) {
-		final StringTokenizer tokenizer = new StringTokenizer(authString, ":");
-		String user = tokenizer.nextToken();
-		String pwd = tokenizer.nextToken();
-		Role role = null;
+	public User authenticateUser(String loginName) {
+		User user = null;
 		try {
-			role = em.createNamedQuery(Role.GET_USER_ROLE, Role.class)
-				.setParameter("idUser", user)
-				.setParameter("password", pwd)
-				.setParameter("idRole", user)
+			user = em.createNamedQuery(User.GET_USER_BY_EMAIL, User.class)
+					.setParameter("txtemail", loginName)
 				.getSingleResult();
-		} catch (NoResultException e) {
-			//log error
+		} catch (Exception e) {
+			user = null;
 		}
-		return role;
+		return user;
+	}
+	
+	public User findUserByAccessKey(String accessKey) {
+		User user = null;
+		try {
+			user = em.createNamedQuery(User.GET_USER_BY_ACCESS_KEY, User.class)
+					.setParameter("accessKey", HashUtils.hex2byte(accessKey))
+				.getSingleResult();
+		} catch (Exception e) {
+			user = null;
+		}
+		return user;
 	}
 	
 	public boolean emailExists(String email) {

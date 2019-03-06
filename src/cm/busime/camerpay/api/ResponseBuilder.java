@@ -81,6 +81,14 @@ public class ResponseBuilder {
 	    return json.build();
 	}
   
+  public JsonObject getResponseSimple(String success,  StatusCode statusCode) {
+	    JsonObjectBuilder json = jsonBuilderFactory.createObjectBuilder();
+	    json.add("success", success);
+	    json.add("message", statusCode.getMessageFormat());
+	    json.add("code", statusCode.getStatusCode());
+	    return json.build();
+	}
+  
   public JsonObject getResponseSimple(Role role, String success) {
 	    JsonObjectBuilder json = jsonBuilderFactory.createObjectBuilder();
 	    json.add("success", success);
