@@ -1,13 +1,10 @@
 package cm.busime.camerpay.api.entity;
 
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
@@ -41,18 +38,14 @@ public class BaseEntity {
   @Id
   @Column(name = "id")
   @XmlTransient
-  private final byte[] id = makeUuidAsBytes();
+  public final byte[] id = makeUuidAsBytes();
 
   public String getId() {
     return HashUtils.byte2hex(id);
   }
-
-  @Column(name = "accessKey")
-  @XmlTransient
-  private final byte[] accessKey = makeUuidAsBytes();
   
-  public String getAccessKey() {
-	    return HashUtils.byte2hex(accessKey);
+  public byte[] getIdAsByte() {
+	    return id;
   }
 
   @Version

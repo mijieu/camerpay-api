@@ -63,8 +63,8 @@ public class UserResource {
 	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
 	public Response userAuthentication(@PathParam("loginName") final String loginName,
 							 @PathParam("password") final String password){
-		log.log(Level.INFO, "...incomming authentication request for " + loginName);
-		User user = userFacade.userAuthentication(loginName);
+		log.log(Level.INFO, "...incomming authentication request for " + loginName + " with pwd " + password);
+		User user = userFacade.findUserByLoginName (loginName);
 		if (user == null) {
 			log.log(Level.INFO, "authentication failed for " + loginName);
 			return responseBuilder
@@ -72,6 +72,7 @@ public class UserResource {
 				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_NOT_EXIST, new Object[] {loginName}))
 				.build();
 		}
+		log.log(Level.INFO, "...retrieved user: " + user.toString());
 		if (!user.getTxtstatus().equals(UserStatus.ACTIVE))
 			return responseBuilder
 					.status(StatusCode.USER_NOT_ACTIVATED.getResponseStatus())
@@ -92,9 +93,10 @@ public class UserResource {
 	
 	@POST
 	@Path("registration")
-	@Consumes({MediaType.APPLICATION_JSON + "; charset=utf-8"})
-	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
-	public Response userRegister(User user){
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response userRegistration(User user){
+		user.setPassword(user.getTxtpassword());
 		log.log(Level.INFO, "...incomming registration request: " + user.toString());
 			StatusCode resultCode = userFacade.saveUserRegistration(user);
 			Response resp = responseBuilder.getResourceNotFoundResponse();
@@ -133,7 +135,7 @@ public class UserResource {
 		userFacade.updateUser(user);
 		return responseBuilder
 				.statusOk()
-				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_ACTIVATED, new Object[] {user.getTxtemail()}))
+				.entity(responseBuilder.getResponseSimple("true", StatusCode.USER_ACTIVATED, new Object[] {user.getTxtemail()}))
 				.build();
 	}
 	

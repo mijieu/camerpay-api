@@ -42,8 +42,8 @@ public class UserFacade {
 		}
 	}
 	
-	public User userAuthentication (final String loginName) {
-		return userStore.authenticateUser(loginName);
+	public User findUserByLoginName (final String loginName) {
+		return userStore.findUserByLoginName(loginName);
 	}
 	
 	public User findUserByAccesKey (final String accessKey) {

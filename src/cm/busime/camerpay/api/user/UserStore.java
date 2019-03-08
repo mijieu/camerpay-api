@@ -2,6 +2,8 @@ package cm.busime.camerpay.api.user;
 
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -17,6 +19,9 @@ public class UserStore {
 	@PersistenceContext(unitName="CAMERPAYAPIPU")
 	private EntityManager em;
 	
+
+	private static final Logger log = Logger.getLogger(UserStore.class.getName());
+	
 	public boolean isAuthExist (String user_id) {
 		List<Auth> rs = em.createNamedQuery(Auth.GET_USER_ID, Auth.class)
 				.setParameter("user_id", user_id)
@@ -25,6 +30,7 @@ public class UserStore {
 	}
 	
 	public void createAuth(User user) {
+		log.log(Level.INFO, "User before saving: " + user.toString());
 		em.persist(user);
 	}
 	
@@ -32,10 +38,10 @@ public class UserStore {
 		return em.merge(user);
 	}
 	
-	public User authenticateUser(String loginName) {
+	public User findUserByLoginName(String loginName) {
 		User user = null;
 		try {
-			user = em.createNamedQuery(User.GET_USER_BY_EMAIL, User.class)
+			user = em.createNamedQuery(User.GET_USER_BY_LOGIN_NAME, User.class)
 					.setParameter("txtemail", loginName)
 				.getSingleResult();
 		} catch (Exception e) {
