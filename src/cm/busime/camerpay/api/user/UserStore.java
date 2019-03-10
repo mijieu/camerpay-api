@@ -42,8 +42,8 @@ public class UserStore {
 		User user = null;
 		try {
 			user = em.createNamedQuery(User.GET_USER_BY_LOGIN_NAME, User.class)
-					.setParameter("txtemail", loginName)
-				.getSingleResult();
+						.setParameter("txtemail", loginName)
+						.getSingleResult();
 		} catch (Exception e) {
 			user = null;
 		}

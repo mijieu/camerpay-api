@@ -2,18 +2,14 @@ package cm.busime.camerpay.api.entity;
 
 import static cm.busime.camerpay.api.util.UuidUtil.makeUuidAsBytes;
 
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -23,7 +19,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 
 import cm.busime.camerpay.api.enumeration.UserStatus;
 import cm.busime.camerpay.api.util.HashUtils;
@@ -42,7 +37,7 @@ import cm.busime.camerpay.api.util.HashUtils;
 @Entity
 @Table(name = "T_USER")
 @XmlRootElement
-public class User extends BaseEntity implements Serializable{
+public class User extends BaseEntity {
 	
 	private static final Logger log = Logger.getLogger(User.class.getName());
 
@@ -51,6 +46,18 @@ public class User extends BaseEntity implements Serializable{
 	private static final long serialVersionUID = 1L;
 	private static final int KEY_LEN = 1024;
 	private static final int ROUNDS = 100_021;
+	
+	@Id
+	@Column(name = "id")
+	public final byte[] id = makeUuidAsBytes();
+	
+	public String getId() {
+	  return HashUtils.byte2hex(id);
+	}
+	  
+	public byte[] getIdAsByte() {
+		 return id;
+	}
 	
 	@Column(name = "accessKey")
 	private final byte[] accessKey = makeUuidAsBytes();
@@ -69,6 +76,10 @@ public class User extends BaseEntity implements Serializable{
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "ADDRESS_ID")
 	private Address address;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "CONTACT_ID")
+	private Contact contact;
 	
 	@Column(name = "txtfirstname")
 	private String txtfirstname;
@@ -161,23 +172,11 @@ public class User extends BaseEntity implements Serializable{
 
 	public boolean checkPassword(String password) {
 		byte[] reqPasswordHash = obtainPasswordHash(password);
-	    log.log(Level.INFO,"req password size:"+reqPasswordHash.length);
-	    log.log(Level.INFO,"store password size:"+this.password.length);
 	    return txtstatus == UserStatus.ACTIVE 
 	            && Arrays.equals(reqPasswordHash, this.password);
 	}
 	
 	private byte[] obtainPasswordHash(String password) {
-//		MessageDigest md;
-//		byte[] hashInBytes=null;
-//		try {
-//			md = MessageDigest.getInstance("SHA-256");
-//			hashInBytes = md.digest(password.getBytes(StandardCharsets.UTF_8));
-//		} catch (NoSuchAlgorithmException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//        return hashInBytes;
 	    return HashUtils.hashPassword(password, makeSalt(), ROUNDS, KEY_LEN);
 	}
 	
@@ -190,26 +189,11 @@ public class User extends BaseEntity implements Serializable{
 	  
 	@Override
 	public String toString() {
-		String userString = "\n\nuser.id: " + getId() + "\n" +
+		return "\nuser.id: " + getId() + "\n" +
 				"user.email: " + txtemail + "\n" + 
 				"user.accessKey: " + getAccessKey() + "\n" +
 				"password byte: " + getPassword()+ "\n" +
 				"password text: " + txtpassword;
-		
-		return userString;
-	}
-	  
-	public static void main(String[] arg) {
-		  String pwd = "12345678";
-		  User u = new User();
-		  u.setTxtemail("achill@yahoo.fr");
-		  u.setTxtstatus(UserStatus.ACTIVE);
-		  System.out.println("id:"+u.getId());
-		  System.out.println("accessKey:"+u.getAccessKey());
-		  if (u.checkPassword(pwd))
-			  System.out.println("OK");
-		  else
-			  System.out.println("nOK");
 	}
 	
 }

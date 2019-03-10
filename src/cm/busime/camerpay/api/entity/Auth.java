@@ -1,11 +1,15 @@
 package cm.busime.camerpay.api.entity;
 
+import static cm.busime.camerpay.api.util.UuidUtil.makeUuidAsBytes;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+
+import cm.busime.camerpay.api.util.HashUtils;
 
 
 @NamedQueries({
@@ -26,6 +30,14 @@ public class Auth extends BaseEntity{
 	
 	public static final String GET_USER_ID = "Auth.GET_USER_ID";
 	public static final String GET_USER_FOR_AUTH = "Auth.GET_USER_FOR_AUTH";
+	
+	@Id
+	@Column(name = "id")
+	public final String id = HashUtils.byte2hex(makeUuidAsBytes());
+	
+	public String getId() {
+	  return id;
+	}
 	
 	@Column(name = "USER_ID")
 	private String user_id;

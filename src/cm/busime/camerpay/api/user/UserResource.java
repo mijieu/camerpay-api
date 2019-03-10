@@ -13,20 +13,15 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.jboss.resteasy.util.Base64;
 
 import cm.busime.camerpay.api.ResponseBuilder;
-import cm.busime.camerpay.api.entity.Auth;
 import cm.busime.camerpay.api.entity.User;
 import cm.busime.camerpay.api.enumeration.StatusCode;
 import cm.busime.camerpay.api.enumeration.UserStatus;
-import cm.busime.camerpay.api.enumeration.RoleType;
-import cm.busime.camerpay.api.error.CamerpayAPIException;
 
 @Path("user")
 public class UserResource {
@@ -38,25 +33,7 @@ public class UserResource {
 	
 	@Inject
 	UserFacade userFacade;
-
-
-//	@POST
-//	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
-//	public Response createAuth(@QueryParam("role") final String role,
-//			final Auth payload) throws CamerpayAPIException{
-//		JsonObject result = null;
-//		try {
-//		if ( RoleType.valueOf(role) != null)
-//			result = userFacade.createAuth(payload, role);
-//			return responseBuilder
-//					.statusOk()
-//					.entity(result)
-//					.build();
-//		}catch(IllegalArgumentException e) {
-//			throw new CamerpayAPIException(StatusCode.BAD_REQUEST, "The parameter role is null or not valid. Expected is " +
-//			RoleType.ADMIN + ", " + RoleType.MEMBER + ", or, "  + RoleType.PUBLIC);
-//		}
-//	}
+	
 	
 	@GET
 	@Path("authentication/login/{loginName}/password/{password}")
@@ -125,7 +102,6 @@ public class UserResource {
 	public Response activateUserAccount(@PathParam("key") final String accessKey){
 		User user = userFacade.findUserByAccesKey(accessKey);
 		if (user == null) {
-			log.log(Level.INFO, "User not found");
 			return responseBuilder
 				.status(StatusCode.USER_ACCESS_KEY_NOT_EXIST.getResponseStatus())
 				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_ACCESS_KEY_NOT_EXIST,new Object[] {accessKey}))
@@ -135,28 +111,51 @@ public class UserResource {
 		userFacade.updateUser(user);
 		return responseBuilder
 				.statusOk()
-				.entity(responseBuilder.getResponseSimple("true", StatusCode.USER_ACTIVATED, new Object[] {user.getTxtemail()}))
+				.entity(responseBuilder.getResponseSimple("true", StatusCode.USER_STATUS_UPDATED, new Object[] {user.getTxtemail()}))
 				.build();
 	}
 	
-	@GET
-	@Path("account/{id}")
-	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
-	public Response getUserById(@PathParam("id") final String user_id){
-			return responseBuilder
-					.statusOk()
-					.entity(getUserAuthenticationInfo(user_id))
-					.build();
-	}
-	
 	@PUT
-	@Path("account/{id}/status/{status}")
+	@Path("account/{key}/status/{status}")
+	@Consumes({MediaType.APPLICATION_JSON + "; charset=utf-8"})
 	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
-	public Response updateUserAccount(@PathParam("id") final String user_id){
+	public Response updateUserStatus(@PathParam("key") final String accessKey, @PathParam("status") final String status){
+		User user = userFacade.findUserByAccesKey(accessKey);
+		if (user == null) {
+			return responseBuilder
+				.status(StatusCode.USER_ACCESS_KEY_NOT_EXIST.getResponseStatus())
+				.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_ACCESS_KEY_NOT_EXIST,new Object[] {accessKey}))
+				.build();
+		}
+		if (null != status && !status.isEmpty()) {
+			switch(status) {
+				case "enable":
+					user.setTxtstatus(UserStatus.ACTIVE);
+					break;
+				case "disable":
+					user.setTxtstatus(UserStatus.INACTIVE);
+					break;
+				case "delete":
+					user.setTxtstatus(UserStatus.RETIRED);
+					break;
+				default:
+					return responseBuilder
+							.statusOk()
+							.entity(responseBuilder.getResponseSimple("false", StatusCode.STATUS_NOT_EXIST, new Object[] {status}))
+							.build();
+			}
+		}
+		else
 			return responseBuilder
 					.statusOk()
-					.entity(getUserAuthenticationInfo(user_id))
+					.entity(responseBuilder.getResponseSimple("false", StatusCode.STATUS_NOT_EXIST, new Object[] {status}))
 					.build();
+		
+		userFacade.updateUser(user);
+		return responseBuilder
+				.statusOk()
+				.entity(responseBuilder.getResponseSimple("true", StatusCode.USER_STATUS_UPDATED, new Object[] {user.getTxtemail()}))
+				.build();
 	}
 	
 	@PUT

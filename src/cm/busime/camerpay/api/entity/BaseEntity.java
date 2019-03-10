@@ -35,18 +35,6 @@ import java.util.Date;
 @XmlTransient
 public class BaseEntity {
 	  
-  @Id
-  @Column(name = "id")
-  @XmlTransient
-  public final byte[] id = makeUuidAsBytes();
-
-  public String getId() {
-    return HashUtils.byte2hex(id);
-  }
-  
-  public byte[] getIdAsByte() {
-	    return id;
-  }
 
   @Version
   @Column(name = "VERSION", precision = 19, scale = 0, nullable = false)

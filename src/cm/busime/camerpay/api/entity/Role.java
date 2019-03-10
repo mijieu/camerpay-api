@@ -1,14 +1,18 @@
 package cm.busime.camerpay.api.entity;
 
+import static cm.busime.camerpay.api.util.UuidUtil.makeUuidAsBytes;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 import cm.busime.camerpay.api.enumeration.RoleType;
+import cm.busime.camerpay.api.util.HashUtils;
 
 @NamedQueries({
 	@NamedQuery (
@@ -24,6 +28,14 @@ import cm.busime.camerpay.api.enumeration.RoleType;
 public class Role extends BaseEntity{
 	
 	public static final String GET_USER_ROLE = "Role.GET_USER_ROLE";
+	
+	@Id
+	@Column(name = "id")
+	public final String id = HashUtils.byte2hex(makeUuidAsBytes());
+	
+	public String getId() {
+	  return id;
+	}
 	
 	@Column(name = "USER_ID")
 	private String user_id;

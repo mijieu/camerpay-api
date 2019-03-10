@@ -14,9 +14,9 @@
 		<class>cm.busime.camerpay.api.entity.User</class>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
     	<shared-cache-mode>NONE</shared-cache-mode>
-		<properties>
+		<!--properties>
 			<property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
-		</properties>
+		</properties-->
 	</persistence-unit>
 
 </persistence>

@@ -26,8 +26,13 @@ public enum StatusCode {
   USER_AUTHENTICATION_FAILED("CMRPAY_S_204", "User credentials not correct", 404 , Level.INFO),
   USER_NOT_EXIST("CMRPAY_S_205", "The User with the id {0} not exists", 404 , Level.INFO),
   USER_NOT_ACTIVATED("CMRPAY_S_206", "User is currently not activated", 401 , Level.INFO),
-  USER_ACTIVATED("CMRPAY_S_207", "User with id {0} has been successfully activated", 201 , Level.INFO),
+  USER_STATUS_UPDATED("CMRPAY_S_207", "Status of user with id {0} has been successfully updated", 201 , Level.INFO),
   USER_ACCESS_KEY_NOT_EXIST("CMRPAY_S_208", "Access key {0} not exists", 404 , Level.INFO),
+  STATUS_NOT_EXIST("CMRPAY_S_209", "Status {0} not exists", 404 , Level.INFO),
+  CONTACT_CREATED("CMRPAY_S_210", "Contact has been successfully created", 201 , Level.INFO),
+  CONTACT_EXISTS("CMRPAY_S_211", "The Contact {0} {1} already exists", 202 , Level.INFO),
+  CONTACT_NOT_EXISTS("CMRPAY_S_212", "The selected Contact doesn't exists", 202 , Level.INFO),
+  CONTACT_UPDATED("CMRPAY_S_213", "Contact has been successfully updated", 201 , Level.INFO)
 	;
 
   private final String statusCode;
