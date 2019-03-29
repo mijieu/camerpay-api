@@ -26,5 +26,7 @@ public class CamerpayAPI extends Application {
 
 	private void addRestResourceClasses(Set<Class<?>> resources) {
 	   resources.add(cm.busime.camerpay.api.user.UserResource.class);
+	   resources.add(cm.busime.camerpay.api.user.ContactResource.class);
+	   resources.add(cm.busime.camerpay.api.setting.SystemSettingRessource.class);
 	}
 }
