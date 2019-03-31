@@ -19,4 +19,6 @@ public interface SystemSettingProvider {
 	  String getSystemProperty(String key);
 	  
 	  public void saveSystemSettings(final List<SystemSetting> systemSettingsList);
+	  
+	  public SystemSetting retrieveSetting(String settingName);
 }

@@ -38,6 +38,10 @@ public class UserStore {
 		return em.merge(user);
 	}
 	
+	public void removeUser(User user) {
+		delete(user);
+	}
+	
 	public User findUserByLoginName(String loginName) {
 		User user = null;
 		try {
@@ -69,4 +73,12 @@ public class UserStore {
 	    long count = query.getSingleResult();
 	    return count > 0;
 	}
+	
+	private void delete(Object entity) {
+	    if (em.contains(entity)) {
+	      em.remove(entity);
+	    } else {
+	      em.remove(em.merge(entity));
+	    }
+	 }
 }

@@ -32,7 +32,8 @@ public enum StatusCode {
   CONTACT_CREATED("CMRPAY_S_210", "Contact has been successfully created", 201 , Level.INFO),
   CONTACT_EXISTS("CMRPAY_S_211", "The Contact {0} {1} already exists", 202 , Level.INFO),
   CONTACT_NOT_EXISTS("CMRPAY_S_212", "The selected Contact doesn't exists", 202 , Level.INFO),
-  CONTACT_UPDATED("CMRPAY_S_213", "Contact has been successfully updated", 201 , Level.INFO)
+  CONTACT_UPDATED("CMRPAY_S_213", "Contact has been successfully updated", 201 , Level.INFO),
+  SEND_ACTIVATION_MAIL_FAILED("CMRPAY_S_214", "Unexpected error while sending activation mail. Please retry.", 201 , Level.INFO)
 	;
 
   private final String statusCode;

@@ -91,7 +91,8 @@ public class SystemSettingStore implements SystemSettingProvider {
 		}
 	}
 	
-	private SystemSetting retrieveSetting(String settingName) {
+	@Override
+	public SystemSetting retrieveSetting(String settingName) {
 	    try {
 	      return em.createNamedQuery(SystemSetting.FIND_SYSTEM_SETTING_BY_KEY, SystemSetting.class)
 	              .setParameter(SystemSetting.SETTING_KEY, settingName)

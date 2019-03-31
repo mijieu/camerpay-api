@@ -1,11 +1,14 @@
 package cm.busime.camerpay.api.user;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.json.JsonObject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -19,9 +22,12 @@ import javax.ws.rs.core.Response;
 import org.jboss.resteasy.util.Base64;
 
 import cm.busime.camerpay.api.ResponseBuilder;
+import cm.busime.camerpay.api.entity.MailTemplate;
 import cm.busime.camerpay.api.entity.User;
 import cm.busime.camerpay.api.enumeration.StatusCode;
+import cm.busime.camerpay.api.enumeration.TemplateName;
 import cm.busime.camerpay.api.enumeration.UserStatus;
+import cm.busime.camerpay.api.mail.Mailer;
 
 @Path("user")
 public class UserResource {
@@ -33,6 +39,9 @@ public class UserResource {
 	
 	@Inject
 	UserFacade userFacade;
+	
+	@Inject
+	Mailer mailer;
 	
 	
 	@GET
@@ -79,10 +88,19 @@ public class UserResource {
 			Response resp = responseBuilder.getResourceNotFoundResponse();
 			switch (resultCode.getResponseStatus()) {
 				case 201:
-					resp = responseBuilder
+					if (sendMail(user)) {
+						resp = responseBuilder
 				            .statusCreated()
 				            .entity(responseBuilder.getResponseSimple("true", StatusCode.USER_CREATED, user.getAccessKey()))
 				            .build();
+					}
+					else {
+						userFacade.removeUser(user);
+						resp = responseBuilder
+			            	.statusCreated()
+			            	.entity(responseBuilder.getResponseSimple("false", StatusCode.SEND_ACTIVATION_MAIL_FAILED))
+			            	.build();
+					}
 					break;
 				case 202:
 					resp = responseBuilder
@@ -158,22 +176,13 @@ public class UserResource {
 				.build();
 	}
 	
-	@PUT
-	@Path("account/{id}")
-	@Produces({MediaType.APPLICATION_JSON + "; charset=utf-8"})
-	public Response deleteAccount(@PathParam("id") final String user_id){
-			return responseBuilder
-					.statusOk()
-					.entity(getUserAuthenticationInfo(user_id))
-					.build();
-	}
-	
-	private JsonObject getUserAuthenticationInfo (String authString) {
-		try {
-			String decodedAuthString = new String(Base64.decode(authString));
-			return null;
-		}catch(IOException e) {
-			return responseBuilder.getResponseSimple("false", StatusCode.USER_AUTHENTICATION_FAILED, new Object[] { e.getMessage()});
-		}
+	private boolean sendMail(User user) {
+	    MailTemplate template = mailer.findTemplateByName(TemplateName.ActivationMail);
+	    String subject = template.getSubject();
+	    String body = template
+	            .getBody()
+	            .replace("{firstName}", user.getTxtfirstname())
+	            .replace("{link}", mailer.getActivationBaseurl() + "?key=" + user.getAccessKey());
+	    return mailer.sendMail(user.getTxtemail(), subject, body);
 	}
 }

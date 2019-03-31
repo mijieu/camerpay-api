@@ -53,4 +53,8 @@ public class UserFacade {
 	public User updateUser (User user) {
 		return userStore.merge(user);
 	}
+	
+	public void removeUser(User user) {
+		userStore.removeUser(user);
+	}
 }
