@@ -2,11 +2,11 @@ package cm.busime.camerpay.api.enumeration;
 
 public enum SystemSettingKey {
   
-  MAIL_HOST("mailhost", "smtp.sendinc.net"),
-  MAIL_SMTP_PORT("mail.protocol.port","465"),
+  MAIL_HOST("mailhost", "smtp.gmail.com"),
+  MAIL_SMTP_PORT("mail.protocol.port","587"),
   MAIL_AUTH("mail.auth","true"),
-  MAIL_ACTIVATION_FROM("mail.activation.from","achille2000@yahoo.fr"),
-  MAIL_HOST_SECRET("mail.host.secret","$1981Bangou5"),
+  MAIL_ACTIVATION_FROM("mail.activation.from","bangou.dev@gmail.com"),
+  MAIL_HOST_SECRET("mail.host.secret","$1981Clarkson5"),
   MAIL_ACTIVATION_BASEURL("mail.activation.baseurl","https://localhost:8443/camerpay/activation")
   ;
 

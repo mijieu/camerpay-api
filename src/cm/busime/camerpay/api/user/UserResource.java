@@ -10,12 +10,14 @@ import javax.inject.Inject;
 import javax.json.JsonObject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -81,14 +83,14 @@ public class UserResource {
 	@Path("registration")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response userRegistration(User user){
+	public Response userRegistration(@QueryParam("locale") @DefaultValue("en") final String lang, final User user){
 		user.setPassword(user.getTxtpassword());
-		log.log(Level.INFO, "...incomming registration request: " + user.toString());
+		log.log(Level.INFO, "...incomming registration request for language: " + lang);
 			StatusCode resultCode = userFacade.saveUserRegistration(user);
 			Response resp = responseBuilder.getResourceNotFoundResponse();
 			switch (resultCode.getResponseStatus()) {
 				case 201:
-					if (sendMail(user)) {
+					if (sendMail(user, lang)) {
 						resp = responseBuilder
 				            .statusCreated()
 				            .entity(responseBuilder.getResponseSimple("true", StatusCode.USER_CREATED, user.getAccessKey()))
@@ -105,7 +107,7 @@ public class UserResource {
 				case 202:
 					resp = responseBuilder
 							.status(StatusCode.USER_EXISTS.getResponseStatus())
-							.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_EXISTS, new Object[] {"Email already exists"}))
+							.entity(responseBuilder.getResponseSimple("false", StatusCode.USER_EXISTS, new Object[] {user.getTxtemail()}))
 							.build();
 					break;
 				default:
@@ -176,13 +178,14 @@ public class UserResource {
 				.build();
 	}
 	
-	private boolean sendMail(User user) {
-	    MailTemplate template = mailer.findTemplateByName(TemplateName.ActivationMail);
+	private boolean sendMail(User user, String lang) {
+	    MailTemplate template = mailer.findTemplateByName(TemplateName.ActivationMail, lang);
 	    String subject = template.getSubject();
 	    String body = template
 	            .getBody()
 	            .replace("{firstName}", user.getTxtfirstname())
-	            .replace("{link}", mailer.getActivationBaseurl() + "?key=" + user.getAccessKey());
+	            .replace("{e-mail}", user.getTxtemail())
+	            .replace("{activation_link}", mailer.getActivationBaseurl() + "?key=" + user.getAccessKey());
 	    return mailer.sendMail(user.getTxtemail(), subject, body);
 	}
 }

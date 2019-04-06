@@ -17,12 +17,12 @@ import cm.busime.camerpay.api.util.HashUtils;
 @NamedQueries({
 	@NamedQuery (
 			name = MailTemplate.FIND_TEMPLATE_BY_NAME,
-			query = "select mt from MailTemplate mt where mt.name = :name"
+			query = "select mt from MailTemplate mt where mt.name = :name and mt.lang = :lang"
 	)
 })
 
 @Entity
-@Table(name = "MailTemplate")
+@Table(name = "T_MAILTEMPLATE")
 public class MailTemplate implements Serializable {
 
 	  private static final long serialVersionUID = 1L;
@@ -64,13 +64,25 @@ public class MailTemplate implements Serializable {
 	  @Column(name = "body")
 	  private String body = "";
 	
-	  @Size(max = 4000)
+	  @Size(max = 10000)
 	  public String getBody() {
 	    return body;
 	  }
 	
 	  public void setBody(String body) {
 		  this.body = body;
+	  } 
+	  
+	  @Column(name = "lang")
+	  private String lang = "";
+	
+	  @Size(max = 10)
+	  public String getLang() {
+	    return lang;
+	  }
+	
+	  public void setLang(String lang) {
+	    this.lang = lang;
 	  }
 
 }

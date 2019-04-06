@@ -53,15 +53,14 @@ public class Mailer {
 			String body, String... files) {
 		try {
 			Properties properties = obtainConfig();
-			Session session = Session.getInstance(properties,
-					new javax.mail.Authenticator() {
-						protected PasswordAuthentication getPasswordAuthentication() {
-							return new PasswordAuthentication(from,
-									setting.getStringSetting(SystemSettingKey.MAIL_HOST_SECRET));
-						}
-					});
+			Session session = Session.getDefaultInstance(properties);
 			MimeMessage message = composeMessage(session, from, recipients, subject, body, files);
-			Transport.send(message);
+			//Transport.send(message);
+            Transport transport = session.getTransport("smtp");
+            transport.connect(setting.getStringSetting(SystemSettingKey.MAIL_HOST), from,
+            		setting.getStringSetting(SystemSettingKey.MAIL_HOST_SECRET));
+            transport.sendMessage(message, message.getAllRecipients());
+            transport.close();
 			return true;
 		} catch (MessagingException mex) {
 			log.log(Level.SEVERE, "Send activation mail failed {0}", mex.getMessage());
@@ -69,8 +68,8 @@ public class Mailer {
 		}
 	}
 	
-	public MailTemplate findTemplateByName(TemplateName templateName) {
-	    return mailService.findTemplateByName(templateName);
+	public MailTemplate findTemplateByName(TemplateName templateName, String lang) {
+	    return mailService.findTemplateByName(templateName, lang);
 	}
 	
 	public String getActivationBaseurl() {
@@ -82,8 +81,11 @@ public class Mailer {
 		//prop.put("mail.transport.protocol.rfc822", "smtp"); 
 		prop.put("mail.smtp.starttls.enable", "true");   
 		prop.put("mail.smtp.host", setting.getStringSetting(SystemSettingKey.MAIL_HOST));
-		prop.put("mail.smtp.port", setting.getStringSetting(SystemSettingKey.MAIL_SMTP_PORT));
-		prop.put("mail.smtp.auth", setting.getBooleanSetting(SystemSettingKey.MAIL_AUTH));
+		prop.put("mail.smtp.port", setting.getStringSetting(SystemSettingKey.MAIL_SMTP_PORT));  
+		prop.put("mail.smtp.user", setting.getStringSetting(SystemSettingKey.MAIL_ACTIVATION_FROM));
+		prop.put("mail.smtp.password", setting.getStringSetting(SystemSettingKey.MAIL_HOST_SECRET));
+		prop.put("mail.smtp.auth", setting.getStringSetting(SystemSettingKey.MAIL_AUTH));
+	    prop.put("mail.debug", "true");
 		return prop;
 	}
 
@@ -101,7 +103,7 @@ public class Mailer {
 
 	private Multipart getMultipartBody(String body, String[] files) throws MessagingException {
 		MimeBodyPart messageBodyPart = new MimeBodyPart();
-		messageBodyPart.setText(body);
+		messageBodyPart.setContent(body, "text/html; charset=utf-8");
 		Multipart multipart = new MimeMultipart();
 		multipart.addBodyPart(messageBodyPart);
 		for (String file : files) {
